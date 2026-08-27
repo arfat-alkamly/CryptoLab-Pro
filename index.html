@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoLab Pro | منصة محاكاة وتحليل التشفير</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-wrapper">
+        <header class="hero">
+            <h1>مختبر التشفير المتقدم (CryptoLab Pro)</h1>
+            <p>منصة تفاعلية لتحليل ومحاكاة الخوارزميات الكلاسيكية والحديثة وتشفير الملفات</p>
+        </header>
+
+        <!-- أشرطة التنقل العلوية -->
+        <nav class="nav-tabs">
+            <button class="tab-item active" onclick="openTab('caesar')">1. قيصر والكسر (Caesar)</button>
+            <button class="tab-item" onclick="openTab('playfair')">2. بلايفير (Playfair)</button>
+            <button class="tab-item" onclick="openTab('modern')">3. التشفير الحديث (AES & DES)</button>
+            <button class="tab-item" onclick="openTab('files')">4. تشفير المستندات (Files)</button>
+            <button class="tab-item" onclick="openTab('hash')">5. التجزئة (SHA-256)</button>
+        </nav>
+
+        <!-- 1. تشفير قيصر -->
+        <div id="caesar" class="panel active">
+            <div class="panel-header">
+                <h2>خوارزمية قيصر وأداة كسر التشفير (Caesar Cipher)</h2>
+                <span class="badge classic">Classical Shift Cipher</span>
+            </div>
+            <div class="input-grid">
+                <div class="field">
+                    <label>النص المراد معالجته (Plaintext / Ciphertext):</label>
+                    <input type="text" id="caesar-text" placeholder="e.g. ATTACK AT DAWN">
+                </div>
+                <div class="field">
+                    <label>قيمة الإزاحة للمفتاح (Shift Key: 1 - 25):</label>
+                    <input type="number" id="caesar-shift" value="3" min="1" max="25">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-enc" onclick="handleCaesar(true)">تشفير (Encrypt)</button>
+                <button class="btn btn-dec" onclick="handleCaesar(false)">فك التشفير (Decrypt)</button>
+                <button class="btn btn-attack" onclick="bruteForceCaesar()">تحليل الكسر بالقوة الغاشمة (Brute Force)</button>
+            </div>
+            <div class="output-card">
+                <div class="output-header-bar">
+                    <div class="output-title">النتيجة:</div>
+                    <button class="copy-btn" onclick="copyResult('caesar-res')">نسخ النص</button>
+                </div>
+                <div id="caesar-res" class="output-val">في انتظار المدخلات...</div>
+                <div id="caesar-math" class="output-steps"></div>
+            </div>
+            <div id="caesar-crack-box" class="crack-container" style="display:none;">
+                <label>نتائج فضاء المفاتيح الممكنة (Key Space Analysis):</label>
+                <div id="caesar-all-keys" class="crack-list"></div>
+            </div>
+        </div>
+
+        <!-- 2. تشفير بلايفير -->
+        <div id="playfair" class="panel">
+            <div class="panel-header">
+                <h2>خوارزمية بلايفير (Playfair Cipher)</h2>
+                <span class="badge classic">Digram Substitution</span>
+            </div>
+            <div class="input-grid">
+                <div class="field">
+                    <label>النص المدخل (English Letters only):</label>
+                    <input type="text" id="playfair-text" placeholder="e.g. SECRET SYSTEM">
+                </div>
+                <div class="field">
+                    <label>كلمة المفتاح (Keyword):</label>
+                    <input type="text" id="playfair-key" placeholder="e.g. MONARCHY">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-enc" onclick="handlePlayfair(true)">تشفير (Encrypt)</button>
+                <button class="btn btn-dec" onclick="handlePlayfair(false)">فك التشفير (Decrypt)</button>
+            </div>
+            <div class="playfair-grid-container">
+                <label class="matrix-label">مصفوفة التشفير المولدة (5x5 Matrix):</label>
+                <div id="matrix-display" class="matrix-grid"></div>
+            </div>
+            <div class="output-card">
+                <div class="output-header-bar">
+                    <div class="output-title">النتيجة:</div>
+                    <button class="copy-btn" onclick="copyResult('playfair-res')">نسخ النص</button>
+                </div>
+                <div id="playfair-res" class="output-val">في انتظار المدخلات...</div>
+            </div>
+        </div>
+
+        <!-- 3. التشفير الحديث -->
+        <div id="modern" class="panel">
+            <div class="panel-header">
+                <h2>معايير التشفير المتماثل الحديثة (AES-256 / DES)</h2>
+                <span class="badge modern">Native Offline Engine</span>
+            </div>
+            <div class="input-grid">
+                <div class="field">
+                    <label>البيانات / النص:</label>
+                    <textarea id="modern-text" rows="3" placeholder="أدخل النص هنا..."></textarea>
+                </div>
+                <div class="field">
+                    <label>المفتاح السري (Secret Passphrase):</label>
+                    <input type="text" id="modern-key" placeholder="أدخل مفتاح التشفير">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-enc" onclick="handleNativeAES(true)">تشفير AES-GCM (256-bit)</button>
+                <button class="btn btn-dec" onclick="handleNativeAES(false)">فك تشفير AES-GCM</button>
+                <button class="btn btn-alt" onclick="handleNativeDES(true)">تشفير DES الخفيف</button>
+                <button class="btn btn-dec" onclick="handleNativeDES(false)">فك تشفير DES</button>
+            </div>
+            <div class="output-card">
+                <div class="output-header-bar">
+                    <div class="output-title">الناتج:</div>
+                    <button class="copy-btn" onclick="copyResult('modern-res')">نسخ النص</button>
+                </div>
+                <div id="modern-res" class="output-val code">في انتظار المدخلات...</div>
+            </div>
+        </div>
+
+        <!-- 4. تشفير المستندات -->
+        <div id="files" class="panel">
+            <div class="panel-header">
+                <h2>نظام تشفير وفك تشفير المستندات</h2>
+                <span class="badge file">AES-256 File System</span>
+            </div>
+            <div class="input-grid">
+                <div class="field">
+                    <label>اختر الملف النصي:</label>
+                    <input type="file" id="file-input" style="direction: rtl;">
+                </div>
+                <div class="field">
+                    <label>مفتاح التشفير الخاص بالملف:</label>
+                    <input type="text" id="file-key" placeholder="كلمة المرور المشفرة">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-enc" onclick="processNativeFile(true)">تشفير وحفظ الملف (.enc)</button>
+                <button class="btn btn-dec" onclick="processNativeFile(false)">فك تشفير واستعادة الملف</button>
+            </div>
+            <div class="output-card">
+                <div class="output-title">حالة المعالجة:</div>
+                <div id="file-status" class="output-val" style="direction: rtl; text-align: right;">يرجى اختيار ملف لإجراء المعالجة.</div>
+            </div>
+        </div>
+
+        <!-- 5. دوال التجزئة -->
+        <div id="hash" class="panel">
+            <div class="panel-header">
+                <h2>دوال التجزئة الرقمية واختبار الانهيار الثلجي (SHA-256)</h2>
+                <span class="badge hash">Cryptographic Hash</span>
+            </div>
+            <div class="input-grid">
+                <div class="field">
+                    <label>النص المدخل الأول (Input String A):</label>
+                    <input type="text" id="hash-val1" oninput="computeNativeHashes()" placeholder="Type string A...">
+                </div>
+                <div class="output-card">
+                    <div class="output-header-bar">
+                        <div class="output-title">بصمة SHA-256 الأولى:</div>
+                        <button class="copy-btn" onclick="copyResult('hash-out1')">نسخ</button>
+                    </div>
+                    <div id="hash-out1" class="output-val code">-</div>
+                </div>
+                <div class="field" style="margin-top: 15px;">
+                    <label>النص المدخل الثاني (Input String B - لمقارنة التغير الجذري):</label>
+                    <input type="text" id="hash-val2" oninput="computeNativeHashes()" placeholder="Type string B with 1 bit difference...">
+                </div>
+                <div class="output-card">
+                    <div class="output-header-bar">
+                        <div class="output-title">بصمة SHA-256 الثانية:</div>
+                        <button class="copy-btn" onclick="copyResult('hash-out2')">نسخ</button>
+                    </div>
+                    <div id="hash-out2" class="output-val code">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الفوتر التفاعلي الاحترافي -->
+        <footer class="tech-footer">
+            <div class="footer-glow"></div>
+            <div class="footer-content">
+                <div class="footer-meta">
+                    <span class="meta-tag">مشروع مادة التشفير وأمن المعلومات</span>
+                    <span class="meta-divider">/</span>
+                    <span class="meta-org">جامعة المنار</span>
+                </div>
+                <div class="footer-author">
+                    <div class="author-avatar">AK</div>
+                    <div class="author-details">
+                        <div class="author-name">المهندس عرفات عبدالله الكاملي</div>
+                        <div class="author-dept">قسم الأمن السيبراني والشبكات</div>
+                    </div>
+                </div>
+                <div class="footer-status">
+                    <span class="status-indicator"></span>
+                    <span class="status-text">النظام جاهز ومُشفر بالكامل</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- تشغيل الكود المحلي بدون أي وسوم خارجية -->
+    <script src="app.js"></script>
+</body>
+</html>
