@@ -1,9 +1,9 @@
 // التحكم في تبديل الصفحات
-function openTab(tabId) {
+function openTab(tabId, trigger) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
-    event.currentTarget.classList.add('active');
+    if (trigger) trigger.classList.add('active');
 }
 
 // دالة نسخ النصوص للحافظة
@@ -83,7 +83,11 @@ function bruteForceCaesar() {
         }
         let div = document.createElement('div');
         div.className = 'crack-item';
-        div.innerHTML = `<span>[Key Shift = ${k}]</span> <strong>${candidate}</strong>`;
+        const keyLabel = document.createElement('span');
+        keyLabel.textContent = `[Key Shift = ${k}]`;
+        const candidateLabel = document.createElement('strong');
+        candidateLabel.textContent = candidate;
+        div.append(keyLabel, document.createTextNode(' '), candidateLabel);
         crackList.appendChild(div);
     }
 }
