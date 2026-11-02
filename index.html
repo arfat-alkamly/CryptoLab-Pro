@@ -17,7 +17,7 @@
         <nav class="nav-tabs">
             <button class="tab-item active" onclick="openTab('caesar', this)">1. قيصر والكسر (Caesar)</button>
             <button class="tab-item" onclick="openTab('playfair', this)">2. بلايفير (Playfair)</button>
-            <button class="tab-item" onclick="openTab('modern', this)">3. التشفير الحديث (AES & DES)</button>
+            <button class="tab-item" onclick="openTab('modern', this)">3. التشفير الحديث (AES & XOR Demo)</button>
             <button class="tab-item" onclick="openTab('files', this)">4. تشفير المستندات (Files)</button>
             <button class="tab-item" onclick="openTab('hash', this)">5. التجزئة (SHA-256)</button>
         </nav>
@@ -93,7 +93,7 @@
         <!-- 3. التشفير الحديث -->
         <div id="modern" class="panel">
             <div class="panel-header">
-                <h2>معايير التشفير المتماثل الحديثة (AES-256 / DES)</h2>
+                <h2>التشفير الحديث والمحاكاة التعليمية (AES-256 / XOR)</h2>
                 <span class="badge modern">Native Offline Engine</span>
             </div>
             <div class="input-grid">
@@ -109,8 +109,8 @@
             <div class="btn-group">
                 <button class="btn btn-enc" onclick="handleNativeAES(true)">تشفير AES-GCM (256-bit)</button>
                 <button class="btn btn-dec" onclick="handleNativeAES(false)">فك تشفير AES-GCM</button>
-                <button class="btn btn-alt" onclick="handleNativeDES(true)">تشفير DES الخفيف</button>
-                <button class="btn btn-dec" onclick="handleNativeDES(false)">فك تشفير DES</button>
+                <button class="btn btn-alt" onclick="handleNativeDES(true)">محاكاة XOR تعليمية (ليست DES)</button>
+                <button class="btn btn-dec" onclick="handleNativeDES(false)">فك محاكاة XOR</button>
             </div>
             <div class="output-card">
                 <div class="output-header-bar">
