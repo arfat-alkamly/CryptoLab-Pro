@@ -386,3 +386,21 @@ input:focus, textarea:focus {
     border-radius: 50%;
     box-shadow: 0 0 6px var(--accent-success);
 }
+
+/* CryptoLab Pro analytical modules and accessible responsive states */
+.analysis-card{margin-top:18px;padding:16px;background:#080d1a;border:1px solid var(--border-color);border-radius:8px}
+.analysis-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+.analysis-heading strong{font-size:13px;color:var(--text-main)}
+.analysis-heading span{font-size:10px;letter-spacing:.08em;color:var(--primary)}
+.analysis-card>p{font-size:12px;line-height:1.8;color:var(--text-muted);margin-bottom:12px}
+.analysis-results{margin-top:12px;color:var(--text-muted);font-size:12px;line-height:1.8;overflow-wrap:anywhere}
+.analysis-row{display:grid;grid-template-columns:minmax(145px,.8fr) minmax(0,1.5fr);gap:12px;padding:9px 10px;border-bottom:1px solid var(--border-color);direction:ltr;text-align:left}
+.analysis-row strong{color:var(--accent-success);overflow-wrap:anywhere}
+.analysis-note{margin-bottom:6px;color:var(--text-muted)}
+.avalanche-metric{font-size:20px;font-weight:700;color:var(--primary);direction:ltr;text-align:left}
+.avalanche-track{height:9px;background:#1e293b;border-radius:20px;overflow:hidden;margin:10px 0}
+.avalanche-track span{display:block;height:100%;background:linear-gradient(90deg,#0ea5e9,#22c55e);border-radius:20px}
+.avalanche-card .analysis-results p{font-size:11px;color:var(--text-muted);line-height:1.8}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+@media(max-width:560px){.analysis-heading{align-items:flex-start;flex-direction:column}.analysis-row{grid-template-columns:1fr;gap:4px}.panel{padding:16px}.hero h1{font-size:21px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
