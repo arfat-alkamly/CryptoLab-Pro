@@ -297,67 +297,95 @@ function handleNativeDES(isEncrypt) {
 // 4. تشفير ومعالجة الملفات (Offline File Encryption)
 // ==========================================
 async function processNativeFile(isEncrypt) {
-    const fileInput = document.getElementById('file-input');
-    const key = document.getElementById('file-key').value;
+    const input = document.getElementById('file-input');
+    const passphrase = document.getElementById('file-key').value;
     const status = document.getElementById('file-status');
+    const file = input.files && input.files[0];
+    const subtle = window.crypto && window.crypto.subtle;
 
-    if (fileInput.files.length === 0 || !key) {
-        status.innerText = "يرجى اختيار ملف وإدخال المفتاح.";
+    if (!file || !passphrase) {
+        status.textContent = 'اختر ملفًا وأدخل عبارة المرور أولًا.';
+        return;
+    }
+    if (!subtle) {
+        status.textContent = 'التشفير غير متاح في هذا السياق. افتح الموقع عبر HTTPS أو localhost ثم أعد المحاولة.';
+        return;
+    }
+    if (isEncrypt && passphrase.length < 10) {
+        status.textContent = 'استخدم عبارة مرور من 10 أحرف على الأقل.';
+        return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+        status.textContent = 'حجم الملف يتجاوز الحد الحالي (100 MB). اختر ملفًا أصغر.';
         return;
     }
 
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-
-    reader.onload = async function(e) {
-        const enc = new TextEncoder();
-        const dec = new TextDecoder();
-        try {
-            if (isEncrypt) {
-                const salt = crypto.getRandomValues(new Uint8Array(16));
-                const iv = crypto.getRandomValues(new Uint8Array(12));
-                const derivedKey = await deriveNativeKey(key, salt);
-                const cipherBuffer = await crypto.subtle.encrypt(
-                    { name: "AES-GCM", iv: iv },
-                    derivedKey,
-                    enc.encode(e.target.result)
-                );
-
-                const combined = new Uint8Array(salt.length + iv.length + cipherBuffer.byteLength);
-                combined.set(salt, 0);
-                combined.set(iv, salt.length);
-                combined.set(new Uint8Array(cipherBuffer), salt.length + iv.length);
-
-                let binary = '';
-                for (let i = 0; i < combined.byteLength; i++) binary += String.fromCharCode(combined[i]);
-                downloadBlob(btoa(binary), file.name + ".enc", "text/plain");
-                status.innerText = `تم التشفير بنجاح وتوليد: ${file.name}.enc`;
-            } else {
-                const rawData = atob(e.target.result);
-                const bytes = new Uint8Array(rawData.length);
-                for (let i = 0; i < rawData.length; i++) bytes[i] = rawData.charCodeAt(i);
-
-                const salt = bytes.slice(0, 16);
-                const iv = bytes.slice(16, 28);
-                const ciphertext = bytes.slice(28);
-
-                const derivedKey = await deriveNativeKey(key, salt);
-                const decryptedBuffer = await crypto.subtle.decrypt(
-                    { name: "AES-GCM", iv: iv },
-                    derivedKey,
-                    ciphertext
-                );
-
-                const originalName = file.name.replace(".enc", "") || "restored_file.txt";
-                downloadBlob(dec.decode(decryptedBuffer), originalName, "text/plain");
-                status.innerText = `تم فك تشفير الملف بنجاح واسترجاعه: ${originalName}`;
-            }
-        } catch (err) {
-            status.innerText = "تعذر المعالجة: المفتاح غير مطابق لمفتاح التشفير الأصلي.";
+    status.textContent = isEncrypt ? 'جارٍ تشفير الملف… لا تغلق الصفحة.' : 'جارٍ فك التشفير والتحقق من سلامة الملف…';
+    try {
+        const data = new Uint8Array(await file.arrayBuffer());
+        if (isEncrypt) {
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const metadata = new TextEncoder().encode(JSON.stringify({
+                name: file.name.replace(/\\.clp\\.enc$/i, ''),
+                type: file.type || 'application/octet-stream'
+            }));
+            if (metadata.length > 65535) throw new Error('Metadata too large');
+            const header = new Uint8Array(34 + metadata.length);
+            header.set([67, 76, 80, 50], 0); // CLP2
+            header.set(salt, 4);
+            header.set(iv, 20);
+            new DataView(header.buffer).setUint16(32, metadata.length, false);
+            header.set(metadata, 34);
+            const key = await deriveFileV2Key(passphrase, salt);
+            const cipher = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv, additionalData: header, tagLength: 128 }, key, data
+            );
+            const packed = new Uint8Array(header.length + cipher.byteLength);
+            packed.set(header, 0);
+            packed.set(new Uint8Array(cipher), header.length);
+            downloadBinary(packed, file.name + '.clp.enc', 'application/octet-stream');
+            status.textContent = 'نجح التشفير. تم تنزيل ملف CLP2 مشفّر مع الاحتفاظ ببيانات الملف الأصلية.';
+            return;
         }
-    };
 
-    reader.readAsText(file);
+        const isCLP2 = data.length >= 34 && data[0] === 67 && data[1] === 76 && data[2] === 80 && data[3] === 50;
+        if (isCLP2) {
+            const metaLength = new DataView(data.buffer, data.byteOffset, data.byteLength).getUint16(32, false);
+            const headerLength = 34 + metaLength;
+            if (metaLength === 0 || data.length < headerLength + 16) throw new Error('Invalid CLP2 container');
+            const metadata = JSON.parse(new TextDecoder().decode(data.slice(34, headerLength)));
+            if (!metadata || typeof metadata.name !== 'string') throw new Error('Invalid metadata');
+            const salt = data.slice(4, 20);
+            const iv = data.slice(20, 32);
+            const header = data.slice(0, headerLength);
+            const key = await deriveFileV2Key(passphrase, salt);
+            const plain = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv, additionalData: header, tagLength: 128 }, key, data.slice(headerLength)
+            );
+            downloadBinary(new Uint8Array(plain), metadata.name || 'restored-file', metadata.type || 'application/octet-stream');
+            status.textContent = 'نجح فك التشفير والتحقق من سلامة الملف. تم تنزيل النسخة المستعادة.';
+            return;
+        }
+
+        // Legacy CLP1: Base64(salt[16] + iv[12] + AES-GCM ciphertext), PBKDF2 100,000.
+        let raw;
+        try { raw = atob(new TextDecoder().decode(data).trim()); }
+        catch (_) { throw new Error('Unsupported file format'); }
+        const bytes = Uint8Array.from(raw, ch => ch.charCodeAt(0));
+        if (bytes.length < 44) throw new Error('Invalid legacy container');
+        const salt = bytes.slice(0, 16);
+        const iv = bytes.slice(16, 28);
+        const key = await deriveNativeKey(passphrase, salt);
+        const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, bytes.slice(28));
+        downloadBinary(new Uint8Array(plain), file.name.replace(/\\.enc$/i, '') || 'restored_file.txt', 'application/octet-stream');
+        status.textContent = 'نجح فك تشفير ملف CLP1 القديم. تم تنزيل الملف المستعاد.';
+    } catch (error) {
+        console.error('CryptoLab file operation failed:', error);
+        status.textContent = isEncrypt
+            ? 'فشل تشفير الملف. تحقق من صلاحية الملف والمتصفح، ثم أعد المحاولة.'
+            : 'فشل فك التشفير: كلمة المرور غير صحيحة أو الملف تالف/ليس ملف CryptoLab مشفرًا.';
+    }
 }
 
 function downloadBlob(content, filename, contentType) {
@@ -459,4 +487,52 @@ async function processNativeFile(isEncrypt){
   const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,bytes.slice(28));
   downloadBinary(new Uint8Array(plain),file.name.replace(/\.enc$/i,'')||'restored_file.txt','text/plain;charset=utf-8');status.textContent='تم فك تشفير ملف CLP1 النصي القديم بنجاح.';
  }catch(e){status.textContent='تعذرت المعالجة: تحقق من كلمة المرور وصحة الملف. الملف لا يُرفع إلى خادم.';}
+}
+
+
+// Additional classical ciphers: Vigenere, Affine and Rail Fence.
+function handleClassicalExtra(isEncrypt) {
+    const algorithm = document.getElementById('extra-algorithm').value;
+    const input = document.getElementById('extra-text').value;
+    const key = document.getElementById('extra-key').value.trim();
+    const output = document.getElementById('extra-result');
+    if (!input || !key) { output.textContent = 'أدخل النص والمفتاح أولًا.'; return; }
+    const lettersOnly = /^[A-Za-z]+$/.test(key);
+    const mod = (n, m) => ((n % m) + m) % m;
+    const gcd = (a,b) => b ? gcd(b,a%b) : Math.abs(a);
+    const inverse = (a,m) => { for(let x=1;x<m;x++) if(mod(a*x,m)===1) return x; return null; };
+    try {
+        let result = '';
+        if (algorithm === 'vigenere') {
+            if (!lettersOnly) throw new Error('استخدم كلمة مفتاح إنجليزية في Vigenere.');
+            const shifts = [...key.toUpperCase()].map(c=>c.charCodeAt(0)-65);
+            let j=0;
+            result = [...input].map(ch => {
+                const code=ch.charCodeAt(0), base=code>=65&&code<=90?65:code>=97&&code<=122?97:0;
+                if(!base) return ch;
+                const shift=shifts[j++%shifts.length]*(isEncrypt?1:-1);
+                return String.fromCharCode(base+mod(code-base+shift,26));
+            }).join('');
+        } else if (algorithm === 'affine') {
+            const parts=key.split(/[ ,:]+/).map(Number), a=parts[0], b=parts[1]||0;
+            if(parts.length<2 || !Number.isInteger(a)||!Number.isInteger(b)||gcd(a,26)!==1) throw new Error('مفتاح Affine يكون a,b مثل 5,8 ويجب أن يكون a أوليًا نسبيًا مع 26.');
+            const inv=inverse(a,26);
+            result=[...input].map(ch=>{const code=ch.charCodeAt(0),base=code>=65&&code<=90?65:code>=97&&code<=122?97:0;if(!base)return ch;const x=code-base;return String.fromCharCode(base+(isEncrypt?mod(a*x+b,26):mod(inv*(x-b),26)));}).join('');
+        } else {
+            const rails=Number(key);
+            if(!Number.isInteger(rails)||rails<2||rails>input.length) throw new Error('عدد الأسطر يجب أن يكون من 2 إلى طول النص.');
+            if(isEncrypt){
+                const rows=Array.from({length:rails},()=>[]);let row=0,dir=1;
+                for(const ch of input){rows[row].push(ch);if(row===0)dir=1;else if(row===rails-1)dir=-1;row+=dir;}
+                result=rows.flat().join('');
+            } else {
+                const pattern=[];let row=0,dir=1;
+                for(let i=0;i<input.length;i++){pattern.push(row);if(row===0)dir=1;else if(row===rails-1)dir=-1;row+=dir;}
+                const counts=Array(rails).fill(0);pattern.forEach(r=>counts[r]++);
+                const rows=[];let pos=0;for(const count of counts){rows.push(input.slice(pos,pos+count).split(''));pos+=count;}
+                const offsets=Array(rails).fill(0);result=pattern.map(r=>rows[r][offsets[r]++]).join('');
+            }
+        }
+        output.textContent=result;
+    } catch(error) { output.textContent=error.message||'تعذر تنفيذ الخوارزمية.'; }
 }
