@@ -1,62 +1,72 @@
-# CryptoLab Pro
+# CryptoLab Pro — Professional Cryptography Workspace
 
-منصة ويب تعليمية تفاعلية لاستكشاف التشفير الكلاسيكي والحديث، وتحليل التردد، وتجربة خصائص التجزئة، وتشفير الملفات محليًا داخل المتصفح.
+CryptoLab Pro is a browser-based educational cryptography workspace combining classical cipher demonstrations, modern Web Crypto API experiments, key utilities, message authentication, file integrity checks, encoding tools, and concise learning notes.
 
-- **النوع:** مشروع أكاديمي فردي لمادة التشفير وأمن المعلومات.
-- **التطوير:** عرفات عبدالله الكاملي.
-- **التقنيات:** HTML5، CSS3، JavaScript، Web Crypto API.
-- **التشغيل:** افتح index.html في متصفح حديث. يلزم HTTPS أو localhost لاستخدام Web Crypto في المتصفحات التي تشترط سياقًا آمنًا.
+**Project owner:** Arfat Alkamali  
+**Type:** Individual academic engineering project  
+**Runtime:** Modern browser with Web Crypto API; use HTTPS or localhost for cryptographic operations.  
+**Privacy:** Operations run locally. The application does not upload inputs or persist passphrases, plaintext, ciphertext, or private RSA keys.
 
-## الوحدات والقدرات
+## Product modules
 
-| الوحدة | الوظائف |
+| Module | Capabilities |
 |---|---|
-| Caesar Cipher | تشفير وفك تشفير قيصر، تجربة الإزاحات 1–25، تحليل القوة الغاشمة، وترتيب أفضل الإزاحات إحصائيًا باستخدام Chi-Square وتوزيع الحروف الإنجليزية |
-| Playfair | إنشاء مصفوفة 5×5 وتطبيق تحويل أزواج الحروف |
-| AES-256-GCM | تشفير وفك تشفير النصوص باستخدام Web Crypto API ومفتاح مشتق عبر PBKDF2-SHA-256 |
-| File Encryption CLP2 | تشفير وفك تشفير الملفات الثنائية والنصية محليًا باستخدام AES-256-GCM، مع حفظ الاسم ونوع MIME والتحقق من سلامة البيانات |
-| Legacy File Support | دعم فك ملفات CLP1 النصية القديمة المشفرة بالإصدار السابق |
-| SHA-256 | حساب بصمات SHA-256 لنصين ومقارنة النتائج |
-| Avalanche Analysis | قياس عدد البتات المختلفة بين بصمتَي SHA-256 وعرض النسبة من 256 بت |
-| XOR Demo | تجربة XOR مبسطة للتوضيح التعليمي فقط |
+| Workspace dashboard | Module overview, quick actions, local-processing notice, responsive navigation |
+| Caesar | Encrypt/decrypt, brute-force candidates, Chi-Square frequency ranking |
+| Playfair | 5×5 key matrix and digraph substitution demonstration |
+| AES-GCM | Existing PBKDF2-derived AES-256-GCM text encryption/decryption |
+| File Vault | CLP2 authenticated binary/text file encryption and legacy CLP1 text decryption |
+| File integrity | SHA-256 file fingerprint and expected-digest comparison |
+| SHA-256 | Text digest comparison and avalanche bit-difference visualization |
+| HMAC-SHA-256 | Create and verify keyed message authentication codes |
+| RSA-OAEP | Ephemeral RSA-2048/SHA-256 keypair generation and short-message encryption/decryption |
+| Key Lab | Cryptographically secure random password and byte generation; local strength estimate |
+| Encoding Toolkit | UTF-8 Base64, hexadecimal, and URL component encode/decode |
+| Learning Academy | Explanations of AES-GCM, RSA-OAEP, SHA-256, HMAC, PBKDF2, and encoding |
 
-## تحسينات الإصدار
+## Architecture
 
-- توسعة تشفير الملفات من قراءة النصوص فقط إلى معالجة ArrayBuffer، بما يسمح بالتعامل مع ملفات ثنائية مثل الصور وملفات PDF والأرشيفات.
-- إضافة حاوية ملفات ذات إصدار CLP2 تتضمن Salt وIV وبيانات وصفية للاسم ونوع الملف، وتستخدم هذه البيانات كـ Additional Authenticated Data.
-- استخدام PBKDF2-HMAC-SHA-256 بعدد 310,000 تكرار في مسار تشفير الملفات الجديد، مع إبقاء مسار فك تشفير الملفات القديمة متوافقًا مع إعداد 100,000 تكرار السابق.
-- إضافة تحليل إحصائي لتجارب قيصر، مع توضيح أن الترتيب احتمالي وليس كاسرًا مضمونًا للتشفير.
-- إضافة قياس مرئي لتأثير الانهيار الثلجي في SHA-256.
-- تحسين رسائل الحالة وإتاحة التركيز بلوحة المفاتيح وتقليل الحركة عند تفضيل المستخدم ذلك.
+- `index.html`: Arabic RTL application shell and module controls.
+- `style.css`: responsive visual system, workspace components, light/dark presentation, and reduced-motion support.
+- `app.js`: original classical cipher, AES, file encryption, and hash modules retained.
+- `pro-suite.js`: workspace utilities, HMAC, RSA-OAEP, encoding, password generation, and file integrity workflow.
 
-## ملاحظات أمنية وحدود الاستخدام
+The new suite is isolated from the original application logic to reduce regressions in existing modules.
 
-- المشروع **تعليمي** وليس منتجًا معتمدًا لحماية المعلومات الحساسة، ولم يُجرَ له تدقيق أمني مستقل.
-- AES-GCM يوفر تشفيرًا موثقًا عند استخدامه بصورة صحيحة. استخدم عبارة مرور قوية وفريدة، ولا تشارك ملفات .clp.enc مع عبارة المرور نفسها.
-- Salt وIV يولدان عشوائيًا لكل عملية تشفير. لا تعد استخدامهما يدويًا.
-- بيانات الاسم ونوع الملف في رأس CLP2 ليست سرية، لكنها موثقة ضمن المصادقة؛ محتوى الملف نفسه مشفر.
-- توافق CLP1 مخصص للملفات النصية القديمة فقط. ملفات CLP2 الجديدة تدعم البيانات الثنائية.
-- تحليل قيصر وبلايفير تعليميان، والخوارزميات الكلاسيكية غير مناسبة لحماية الاتصالات الحديثة.
-- XOR Demo ليس DES ولا يوفر أمانًا تشفيريًا؛ لا تستخدمه لحماية البيانات.
-- SHA-256 دالة تجزئة وليست تشفيرًا ولا يمكن فكها لاستعادة النص الأصلي.
-- كل عمليات الملفات تتم داخل المتصفح ولا تتطلب رفع الملف إلى خادم بواسطة هذا التطبيق.
+## Cryptographic implementation notes
 
-## البنية
+- Random values use `crypto.getRandomValues`; cryptographic operations use `crypto.subtle`.
+- HMAC uses HMAC-SHA-256 with a caller-supplied shared secret.
+- RSA uses RSA-OAEP with a 2048-bit modulus and SHA-256. The keypair is non-extractable and memory-only. The demo limits plaintext to approximately 190 bytes because RSA-OAEP is not designed for large payloads.
+- Password generation uses rejection sampling over random bytes. Strength scoring is a local heuristic, not a breach database check or a formal password audit.
+- File integrity compares SHA-256 digests. A digest proves equality only against a trusted expected digest; it does not authenticate the source by itself.
+- Base64, Hex, and URL encoding are representation formats, not encryption.
+- Existing CLP2 file encryption uses AES-256-GCM with PBKDF2-HMAC-SHA-256 and authenticated header metadata. Existing CLP1 text-file decryption remains supported.
 
-- index.html: الواجهة العربية وأقسام التجارب.
-- style.css: التنسيق والتصميم.
-- app.js: منطق الخوارزميات والتحليل والتجزئة وتشفير الملفات.
+## Security boundaries
 
-## التشغيل
+This is an educational project, not a certified secure file vault or production cryptographic product. It has not undergone independent security review or penetration testing. Do not use it as the sole protection for sensitive production information.
+
+- Never reuse an AES-GCM IV/nonce with the same key.
+- Use unique, strong passphrases and keep them separate from encrypted files.
+- RSA-OAEP should be used for small messages or key wrapping, not bulk file encryption.
+- HMAC authenticates but does not encrypt.
+- SHA-256 is a hash function, not encryption or password storage.
+- Classic ciphers and the XOR demonstration are educational only.
+- A client-side application cannot protect secrets from a compromised browser or device.
+
+## Run locally
 
 ```bash
 git clone https://github.com/arfat-alkamly/CryptoLab-Pro.git
 cd CryptoLab-Pro
+python -m http.server 8000
 ```
 
-افتح index.html في المتصفح أو شغّل خادمًا محليًا من مجلد المشروع.
+Open `http://localhost:8000` in a modern browser.
 
-## روابط
+## Project links
 
-- المستودع: https://github.com/arfat-alkamly/CryptoLab-Pro
-- النسخة المنشورة: https://crypto-lab-pro-xi.vercel.app
+- Repository: https://github.com/arfat-alkamly/CryptoLab-Pro
+- Live application: https://crypto-lab-pro-xi.vercel.app
+- Portfolio case study: https://arfat-phi.vercel.app/projects/cryptolab-pro
