@@ -15,24 +15,14 @@
 
         <!-- أشرطة التنقل العلوية -->
         <nav class="nav-tabs" aria-label="التنقل الرئيسي">
-<button class="tab-item active" type="button" onclick="openTab('workspace',this)" aria-controls="workspace">لوحة القيادة</button>
-<button class="tab-item" type="button" onclick="openTab('keylab',this)" aria-controls="keylab">مختبر المفاتيح</button>
-<button class="tab-item" type="button" onclick="openTab('hmaclab',this)" aria-controls="hmaclab">HMAC والتوثيق</button>
-<button class="tab-item" type="button" onclick="openTab('rsalab',this)" aria-controls="rsalab">مختبر RSA</button>
-<button class="tab-item" type="button" onclick="openTab('encodinglab',this)" aria-controls="encodinglab">أدوات الترميز</button>
-<button class="tab-item" type="button" onclick="openTab('academylab',this)" aria-controls="academylab">الأكاديمية</button>
-<button class="tab-item" type="button" onclick="openTab('caesar',this)" aria-controls="caesar">قيصر والتحليل</button>
+<button class="tab-item active" type="button" onclick="openTab('caesar',this)" aria-controls="caesar">قيصر والتحليل</button>
+<button class="tab-item" type="button" onclick="openTab('classical-extra',this)" aria-controls="classical-extra">خوارزميات كلاسيكية</button>
 <button class="tab-item" type="button" onclick="openTab('playfair',this)" aria-controls="playfair">بلايفير</button>
-<button class="tab-item" type="button" onclick="openTab('modern',this)" aria-controls="modern">AES وXOR</button>
+<button class="tab-item" type="button" onclick="openTab('modern',this)" aria-controls="modern">AES-256-GCM</button>
 <button class="tab-item" type="button" onclick="openTab('files',this)" aria-controls="files">تشفير الملفات</button>
 <button class="tab-item" type="button" onclick="openTab('hash',this)" aria-controls="hash">SHA-256</button>
+<button class="tab-item" type="button" onclick="openTab('hmaclab',this)" aria-controls="hmaclab">HMAC-SHA-256</button>
 </nav>
-            <button class="tab-item active" onclick="openTab('caesar', this)">1. قيصر والكسر (Caesar)</button>
-            <button class="tab-item" onclick="openTab('playfair', this)">2. بلايفير (Playfair)</button>
-            <button class="tab-item" onclick="openTab('modern', this)">3. التشفير الحديث (AES & XOR Demo)</button>
-            <button class="tab-item" onclick="openTab('files', this)">4. تشفير المستندات (Files)</button>
-            <button class="tab-item" onclick="openTab('hash', this)">5. التجزئة (SHA-256)</button>
-        </nav>
 
         <!-- 1. تشفير قيصر -->
 <section id="workspace" class="panel active workspace-panel">
@@ -51,7 +41,7 @@
 <button class="quick-card" onclick="openTab('encodinglab',document.querySelector('[aria-controls=encodinglab]'))"><span class="quick-icon">⌗</span><strong>تحويل النصوص</strong><small>Base64 وHex وURL Encoding</small><span class="quick-arrow">←</span></button></div>
 <div class="workspace-bottom"><div class="workspace-note"><span class="note-mark">i</span><div><strong>ملاحظة أمنية</strong><p>المختبر تعليمي. لا تستخدمه لحماية بيانات إنتاجية حساسة قبل مراجعة التصميم الأمني واختباره.</p></div></div><div class="workspace-note"><span class="note-mark">⌁</span><div><strong>خصوصيتك أولًا</strong><p>لا يحفظ المختبر النصوص أو كلمات المرور أو المفاتيح في سجل دائم. مفاتيح RSA مؤقتة للجلسة.</p></div></div></div>
 </section>
-        <div id="caesar" class="panel">
+        <div id="caesar" class="panel active">
             <div class="panel-header">
                 <h2>خوارزمية قيصر وأداة كسر التشفير (Caesar Cipher)</h2>
                 <span class="badge classic">Classical Shift Cipher</span>
@@ -119,11 +109,23 @@
             </div>
         </div>
 
+        <section id="classical-extra" class="panel">
+            <div class="panel-header"><h2>خوارزميات التشفير الكلاسيكية الإضافية</h2><span class="badge classic">VIGENÈRE · AFFINE · RAIL FENCE</span></div>
+            <div class="input-grid">
+                <div class="field"><label for="extra-algorithm">الخوارزمية</label><select id="extra-algorithm"><option value="vigenere">Vigenère — فيجينير</option><option value="affine">Affine — أفاين</option><option value="rail">Rail Fence — سياج السكك</option></select></div>
+                <div class="field"><label for="extra-key">المفتاح</label><input id="extra-key" type="text" placeholder="كلمة مفتاح أو قيمة رقمية"></div>
+                <div class="field"><label for="extra-text">النص</label><textarea id="extra-text" rows="3" placeholder="اكتب نصًا باللغة الإنجليزية..."></textarea></div>
+            </div>
+            <div class="btn-group"><button class="btn btn-enc" type="button" onclick="handleClassicalExtra(true)">تشفير</button><button class="btn btn-dec" type="button" onclick="handleClassicalExtra(false)">فك التشفير</button></div>
+            <div class="output-card"><div class="output-header-bar"><div class="output-title">الناتج</div><button class="copy-btn" type="button" onclick="copyResult('extra-result')">نسخ</button></div><div id="extra-result" class="output-val">في انتظار المدخلات...</div></div>
+            <p class="security-footnote">هذه خوارزميات تعليمية تاريخية وليست مناسبة لحماية البيانات الحديثة.</p>
+        </section>
+
         <!-- 3. التشفير الحديث -->
         <div id="modern" class="panel">
             <div class="panel-header">
                 <h2>التشفير الحديث والمحاكاة التعليمية (AES-256 / XOR)</h2>
-                <span class="badge modern">Native Offline Engine</span>
+                <span class="badge modern">Web Crypto API</span>
             </div>
             <div class="input-grid">
                 <div class="field">
@@ -138,8 +140,7 @@
             <div class="btn-group">
                 <button class="btn btn-enc" onclick="handleNativeAES(true)">تشفير AES-GCM (256-bit)</button>
                 <button class="btn btn-dec" onclick="handleNativeAES(false)">فك تشفير AES-GCM</button>
-                <button class="btn btn-alt" onclick="handleNativeDES(true)">محاكاة XOR تعليمية (ليست DES)</button>
-                <button class="btn btn-dec" onclick="handleNativeDES(false)">فك محاكاة XOR</button>
+                
             </div>
             <div class="output-card">
                 <div class="output-header-bar">
@@ -243,7 +244,7 @@
                 </div>
                 <div class="footer-status">
                     <span class="status-indicator"></span>
-                    <span class="status-text">النظام جاهز ومُشفر بالكامل</span>
+                    <span class="status-text">المعالجة محلية داخل المتصفح</span>
                 </div>
             </div>
         </footer>
