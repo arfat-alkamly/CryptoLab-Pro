@@ -55,6 +55,7 @@
                 <label>نتائج فضاء المفاتيح الممكنة (Key Space Analysis):</label>
                 <div id="caesar-all-keys" class="crack-list"></div>
             </div>
+            <div class="analysis-card"><div class="analysis-heading"><strong>تحليل التردد الإحصائي</strong><span>CHI-SQUARE / ENGLISH FREQUENCY</span></div><p>ترتيب احتمالات الإزاحة وفق توزيع الحروف الإنجليزية. النتيجة تقديرية وتحتاج مراجعة لغوية.</p><button class="btn btn-alt" type="button" onclick="analyzeCaesarFrequency()">تحليل النص إحصائيًا</button><div id="caesar-frequency-results" class="analysis-results" aria-live="polite">أدخل نصًا مشفرًا ثم ابدأ التحليل.</div></div>
         </div>
 
         <!-- 2. تشفير بلايفير -->
@@ -124,12 +125,12 @@
         <!-- 4. تشفير المستندات -->
         <div id="files" class="panel">
             <div class="panel-header">
-                <h2>نظام تشفير وفك تشفير المستندات</h2>
+                <h2>نظام تشفير وفك تشفير الملفات</h2>
                 <span class="badge file">AES-256 File System</span>
             </div>
             <div class="input-grid">
                 <div class="field">
-                    <label>اختر الملف النصي:</label>
+                    <label>اختر أي ملف (نصي أو ثنائي):</label>
                     <input type="file" id="file-input" style="direction: rtl;">
                 </div>
                 <div class="field">
@@ -138,7 +139,7 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-enc" onclick="processNativeFile(true)">تشفير وحفظ الملف (.enc)</button>
+                <button class="btn btn-enc" onclick="processNativeFile(true)">تشفير الملف وحفظه (.clp.enc)</button>
                 <button class="btn btn-dec" onclick="processNativeFile(false)">فك تشفير واستعادة الملف</button>
             </div>
             <div class="output-card">
@@ -177,6 +178,7 @@
                     <div id="hash-out2" class="output-val code">-</div>
                 </div>
             </div>
+            <div class="analysis-card avalanche-card"><div class="analysis-heading"><strong>اختبار تأثير الانهيار الثلجي</strong><span>AVALANCHE EFFECT</span></div><p>قارن بصمتَي SHA-256. يُحسب اختلاف البتات من أصل 256 بت.</p><div id="hash-avalanche" class="analysis-results" aria-live="polite">أدخل نصين للمقارنة.</div></div>
         </div>
 
         <!-- الفوتر التفاعلي الاحترافي -->
