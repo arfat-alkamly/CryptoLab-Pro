@@ -432,7 +432,7 @@ function downloadBinary(bytes,name,mime){
 async function processNativeFile(isEncrypt){
  const input=document.getElementById('file-input'),pass=document.getElementById('file-key').value,status=document.getElementById('file-status'),file=input.files&&input.files[0];
  if(!file||!pass){status.textContent='يرجى اختيار ملف وإدخال عبارة مرور.';return;}
- if(pass.length<10){status.textContent='استخدم عبارة مرور من 10 أحرف على الأقل.';return;}
+ if(isEncrypt&&pass.length<10){status.textContent='استخدم عبارة مرور من 10 أحرف على الأقل عند التشفير الجديد.';return;}
  status.textContent='جارٍ تجهيز الملف محليًا...';
  try{
   const data=new Uint8Array(await file.arrayBuffer());
